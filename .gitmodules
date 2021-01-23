@@ -1,0 +1,3 @@
+[submodule "modules/Schenu"]
+	path = modules/Schenu
+	url = git@github.com:NowhereLTD/Schenu.git

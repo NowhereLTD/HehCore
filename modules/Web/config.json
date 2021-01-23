@@ -1,0 +1,18 @@
+{
+  "name": "WebRouter",
+  "type": "Router",
+  "routes": {
+    "/": {
+      "name": "Home",
+      "path": "Home.class.js"
+    },
+    "*": {
+      "name": "ErrorPage",
+      "path": "ErrorPage.class.js"
+    },
+    "/example.json": {
+      "name": "JSONPage",
+      "path": "JSONPage.class.js"
+    }
+  }
+}
