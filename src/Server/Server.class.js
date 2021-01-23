@@ -67,4 +67,10 @@ export class Server extends EventTarget {
     }
     return true;
   }
+
+  file2Path(path) {
+    path = path.replace("file://", "");
+    path = path.substr(0, path.lastIndexOf("/"));
+    return path;
+  }
 }
