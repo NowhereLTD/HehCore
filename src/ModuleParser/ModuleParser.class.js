@@ -33,8 +33,10 @@ export class ModuleParser {
       }
       if(extensionLoad) {
         if(data.type == ModuleType.MODULE_EXTENSION && data.path != null && data.name != null) {
-          let ModuleImport = await import(modulePath + data.path)
-          this.extensions.push(new ModuleImport[data.name](this.server));
+          let ModuleImport = await import(modulePath + data.path);
+          let extension = new ModuleImport[data.name](this.server);
+          this.extensions.push(extension);
+          await extension.init();
         }
       }else {
         for(let extension of this.extensions) {
