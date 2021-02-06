@@ -42,7 +42,7 @@ export class ModuleParser {
       }else {
         for(let extension of this.extensions) {
           if(extension.run != null) {
-            await extension.run(modulePath, data);
+            await extension.run(modulePath, importPath, data);
           }
         }
       }
