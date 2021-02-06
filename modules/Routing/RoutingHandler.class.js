@@ -50,12 +50,12 @@ export class RoutingHandler {
    * @param {String} modulePath The path to the module
    * @param {JSON}   data       The module data
    */
-  async run(modulePath, data) {
+  async run(modulePath, importPath, data) {
     if(data.type == "Router") {
       for(let route in data.routes) {
         this.routes[route] = {
           "data": data.routes[route],
-          "path": modulePath + data.routes[route].path
+          "path": "/" + importPath + data.routes[route].path
         }
       }
     }
