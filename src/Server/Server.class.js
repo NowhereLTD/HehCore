@@ -1,5 +1,5 @@
-import { Response } from "./Utils/Response.class.js";
-import { Request } from "./Utils/Request.class.js";
+import { Response } from "/src/Server/Utils/Response.class.js";
+import { Request } from "/src/Server/Utils/Request.class.js";
 
 /**
   * Server - The Heh core server

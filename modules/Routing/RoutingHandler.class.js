@@ -9,6 +9,7 @@ export class RoutingHandler {
 
     this.server.addEventListener("handle", async function(e) {
       let requestRoute = e.detail.request.route;
+      let requestMethod = e.detail.request.method;
 
       if(this.routes[requestRoute] != null) {
         await this.handleRouting(this.routes[requestRoute], e.detail);
@@ -23,8 +24,10 @@ export class RoutingHandler {
         requestRouteReplacement = requestRouteReplacement.replace(new RegExp(routePart + "$"), "");
         let route = requestRouteReplacement + "*";
         if(this.routes[route] != null) {
-          await this.handleRouting(this.routes[route], e.detail);
-          return true;
+          if(this.routes[route].data.method == requestMethod || this.routes[route].data.method == "*") {
+            await this.handleRouting(this.routes[route], e.detail);
+            return true;
+          }
         }
       }
     }.bind(this));
@@ -38,7 +41,7 @@ export class RoutingHandler {
    */
   async handleRouting(module, data) {
     let RoutingModule = await import(module.path);
-    let Router = new RoutingModule[module.name](data);
+    let Router = new RoutingModule[module.data.name](data);
   }
 
   /**
@@ -51,7 +54,7 @@ export class RoutingHandler {
     if(data.type == "Router") {
       for(let route in data.routes) {
         this.routes[route] = {
-          "name": data.routes[route].name,
+          "data": data.routes[route],
           "path": modulePath + data.routes[route].path
         }
       }
