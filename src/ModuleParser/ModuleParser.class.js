@@ -1,4 +1,4 @@
-import { ModuleType } from "../Enums/ModuleType.enum.js";
+import { ModuleType } from "/src/Enums/ModuleType.enum.js";
 
 
 /**
@@ -21,32 +21,35 @@ export class ModuleParser {
    *
    * @returns {type} Description
    */
-  async loadModulePath(modulePath, parentPath = "", extensionLoad = false) {
+  async loadModulePath(modulePath, importPath = "", extensionLoad = false) {
     try {
-      modulePath = parentPath + modulePath;
       let configData = Deno.readFileSync(modulePath + "config.json");
       let data = JSON.parse(this.decoder.decode(configData));
       if(data.modules != null) {
         for(let subModule of data.modules) {
-          await this.loadModulePath(subModule, modulePath, extensionLoad);
+          await this.loadModulePath(modulePath + subModule, importPath + subModule, extensionLoad);
         }
       }
       if(extensionLoad) {
         if(data.type == ModuleType.MODULE_EXTENSION && data.path != null && data.name != null) {
-          let ModuleImport = await import(modulePath + data.path);
+          let ModuleImport = await import("/" + importPath + data.path);
           let extension = new ModuleImport[data.name](this.server);
           this.extensions.push(extension);
-          await extension.init();
+          if(extension.init != null) {
+            await extension.init();
+          }
         }
       }else {
         for(let extension of this.extensions) {
-          await extension.run(modulePath, data);
+          if(extension.run != null) {
+            await extension.run(modulePath, data);
+          }
         }
       }
       return true;
     } catch (e) {
       console.log(e);
-      console.log("Error: Cannot Load Module.");
+      console.log("Error: Cannot Load Module '" + importPath + "' .");
       return false;
     }
   }

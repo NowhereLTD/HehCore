@@ -4,15 +4,18 @@
   "routes": {
     "/": {
       "name": "Home",
-      "path": "Home.class.js"
+      "path": "Home.class.js",
+      "method": "*"
     },
     "*": {
       "name": "ErrorPage",
-      "path": "ErrorPage.class.js"
+      "path": "ErrorPage.class.js",
+      "method": "*"
     },
     "/example.json": {
       "name": "JSONPage",
-      "path": "JSONPage.class.js"
+      "path": "JSONPage.class.js",
+      "method": "GET"
     }
   }
 }
