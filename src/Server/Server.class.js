@@ -13,6 +13,7 @@ export class Server extends EventTarget {
     this.protocol = protocol;
     this.connections = [];
     this.maxRequestSize = 1024;
+    this.version = 1;
   }
 
   /**

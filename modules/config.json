@@ -1,6 +1,7 @@
 {
   "modules": [
     "Web/",
-    "Routing/"
+    "Routing/",
+    "Schenu/"
   ]
 }
