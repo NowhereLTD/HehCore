@@ -12,6 +12,7 @@ export class RoutingHandler {
       let requestMethod = e.detail.request.method;
 
       if(this.routes[requestRoute] != null) {
+        e.detail.settings = this.routes[requestRoute].settings;
         await this.handleRouting(this.routes[requestRoute], e.detail);
         return true;
       }
@@ -25,6 +26,7 @@ export class RoutingHandler {
         let route = requestRouteReplacement + "*";
         if(this.routes[route] != null) {
           if(this.routes[route].data.method == requestMethod || this.routes[route].data.method == "*") {
+            e.detail.settings = this.routes[route].settings;
             await this.handleRouting(this.routes[route], e.detail);
             return true;
           }
@@ -41,7 +43,7 @@ export class RoutingHandler {
    */
   async handleRouting(module, data) {
     let RoutingModule = await import(module.path);
-    let Router = new RoutingModule[module.data.name](data);
+    let Router = await new RoutingModule[module.data.name](data);
   }
 
   /**
@@ -55,7 +57,8 @@ export class RoutingHandler {
       for(let route in data.routes) {
         this.routes[route] = {
           "data": data.routes[route],
-          "path": "/" + importPath + data.routes[route].path
+          "path": "/" + importPath + data.routes[route].path,
+          "settings": data.settings
         }
       }
     }
