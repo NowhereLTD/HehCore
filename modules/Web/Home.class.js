@@ -6,8 +6,8 @@ export class Home {
     return (async () => {
       let page = Deno.readTextFileSync(data.Server.file2Path(import.meta.url) + "/View/Home.html");
       let parsedPage = await data.Server.Schenu.parse(page, {"version": data.Server.version});
-      let response = new data.Response(parsedPage);
-      response.send(data.connection);
+      let response = new data.Response({body: parsedPage});
+      await response.send(data.connection);
     })();
   }
 }

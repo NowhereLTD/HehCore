@@ -1,15 +1,31 @@
+import { MIMEType } from "/src/Enums/MIMEType.enum.js";
+
 /**
   * Response - A http response
   */
 export class Response {
-  constructor(body) {
+  constructor(params = {body: null, filePath: null}) {
     this.encoder = new TextEncoder();
-    this.body = this.encoder.encode(body);
-    this.contentType = "application/json";
-    try {
-      let json = JSON.parse(body);
-    } catch (e) {
-      this.contentType = "text/html";
+    if(params.filePath != null) {
+      let fileBase = params.filePath.split(".");
+      let fileMime = fileBase[fileBase.length-1].toUpperCase();
+      this.contentType = MIMEType[fileMime];
+      if(this.contentType == null) {
+        this.contentType = MIMEType.DEFAULT;
+      }
+      if(this.contentType.match("text") || this.contentType.match("json")) {
+        this.body = this.encoder.encode(Deno.readTextFileSync(params.filePath));
+      }else {
+        this.body = Deno.readFileSync(params.filePath);
+      }
+    }else {
+      this.body = this.encoder.encode(params.body);
+      try {
+        let json = JSON.parse(params.body);
+        this.contentType = "application/json";
+      } catch (e) {
+        this.contentType = "text/html";
+      }
     }
     this.httpVersion = "2.0";
     this.status = 200;

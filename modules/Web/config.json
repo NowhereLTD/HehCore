@@ -8,8 +8,8 @@
       "method": "*"
     },
     "*": {
-      "name": "ErrorPage",
-      "path": "ErrorPage.class.js",
+      "name": "AssetOrErrorPage",
+      "path": "AssetOrErrorPage.class.js",
       "method": "*"
     },
     "/example.json": {
@@ -17,5 +17,8 @@
       "path": "JSONPage.class.js",
       "method": "GET"
     }
+  },
+  "settings": {
+    "resourceDirectory": "assets"
   }
 }

@@ -1,5 +1,18 @@
 {
   "modules": [
     "modules/"
-  ]
+  ],
+  "settings": {
+    "hostname": "localhost",
+    "port": 80,
+    "protocol": "tcp",
+    "maxRequestSize": 1024,
+    "version": 1,
+    "mimeReferences": {
+      "MID": ["midi", "kar"],
+      "3GPP": ["3gp"],
+      "MPEG": ["mpg"],
+      "ASX": ["asf"]
+    }
+  }
 }
