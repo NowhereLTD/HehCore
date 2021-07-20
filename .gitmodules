@@ -1,6 +1,0 @@
-[submodule "modules/Pyramis"]
-	path = modules/Pyramis
-	url = https://github.com/NowhereLTD/Pyramis.git
-[submodule "modules/Schenu"]
-	path = modules/Schenu
-	url = https://github.com/NowhereLTD/Schenu.git
