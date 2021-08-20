@@ -13,7 +13,7 @@ Heh is fully based on Javascript.
 | --- |:---:|
 | [Schenu](https://github.com/NowhereLTD/Schenu) | Templating engine |
 | [Pyramis](https://github.com/NowhereLTD/Pyramis) | ORM |
-| [CSS-Libary](https://nowhereltd.github.io/Hathor/) | Hathor |
+| [Hathor](https://nowhereltd.github.io/Hathor/) | CSS-Libary |
 
 </div>
 
