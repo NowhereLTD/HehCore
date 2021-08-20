@@ -20,6 +20,9 @@ export class Server extends EventTarget {
     this.maxRequestSize = this.configData.settings.maxRequestSize ?? 1024;
     this.version = this.configData.settings.version ?? 1;
 
+    // Regex
+    this.getContentLengthRegex = new RegExp("Content-Length\: (.*)\\r$");
+
     this.moduleParser = new ModuleParser(this);
     return (async function () {
       await this.moduleParser.loadModulePath(this.basePath, "", true);
@@ -40,15 +43,38 @@ export class Server extends EventTarget {
       let dataArray = [];
       let data = "";
       let requestSize = 0;
-      while (dataArray[dataArray.length-1] != "\r" && requestSize != this.maxRequestSize) {
+      let nextContentLength = false;
+      let contentLength = -1;
+      let contentData = null;
+      let lastLine = "";
+
+      while(dataArray[dataArray.length-1] != "\r" && requestSize != this.maxRequestSize && contentLength == -1 || contentLength > 0 && contentLength != -1) {
         let requestBuffer = new Uint8Array(1);
         await connection.read(requestBuffer);
-        data = data + this.decoder.decode(requestBuffer);
-        dataArray = data.split("\n");
-        requestSize = requestSize +1;
+        let parsedBuffer = this.decoder.decode(requestBuffer);
+        lastLine = lastLine + parsedBuffer;
+
+        let contentLengthData = this.getContentLengthRegex.exec(lastLine);
+        if(contentLengthData) {
+          contentLength = contentLengthData[1];
+          dataArray.push(lastLine);
+          data = data + lastLine + "\n";
+          lastLine = "";
+        }
+        if(contentLength > 0) {
+          contentData = contentData + parsedBuffer;
+          contentLength--;
+        }else {
+          if(parsedBuffer == "\n") {
+            dataArray.push(lastLine);
+            data = data + lastLine;
+            lastLine = "";
+          }
+        }
       }
 
       let request = new Request(data);
+      request.setContentData(contentData);
       this.dispatchEvent(new CustomEvent("handle", {
         detail: {
           connection: connection,
