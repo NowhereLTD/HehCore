@@ -73,10 +73,10 @@ export class Server extends EventTarget {
       }
 
       let request = new Request(data);
-      console.log(request);
       if(contentData) {
         request.setContentData(contentData);
       }
+      request.loginAPIUser(this, connection);
       this.dispatchEvent(new CustomEvent("handle", {
         detail: {
           connection: connection,

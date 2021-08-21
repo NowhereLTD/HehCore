@@ -2,8 +2,6 @@
 export class Request {
   constructor(raw) {
     this.parseFromRaw(raw);
-    //this.parseContentRegex = /Content-Disposition\:\ form-data; name="(.*)"\r\n\r\n(.*)/gms;
-    //this.parseFileContentRegex = //gms;
     this.parseContentRegex = new RegExp("Content-Disposition\:\ form-data; name=\"([^\n]*)\"\r\n\r\n(.*)", "gms");
     this.parseFileContentRegex = new RegExp("Content-Disposition\:\ form-data; name=\"([^\n]*)\"; filename=\"([^\n]*)\"\r\nContent-Type\:\ ([^\n]*)(.*)", "gms");
   }
@@ -73,6 +71,27 @@ export class Request {
       }
     }else {
       console.log("Content type is actually not supported!");
+    }
+  }
+
+  loginAPIUser(server, connection) {
+    if(this["authorization"]) {
+      let key = this["authorization"].replace(" Bearer ", "");
+      let users = server.configData.user ?? {};
+      for(let username in users) {
+        let user = users[username];
+        for(let longkey in user.longkeys) {
+          if(longkey = key) {
+            let longkeyData = user.longkeys[longkey];
+            let checkDate = new Date();
+            if(checkDate.setTime(longkeyData.validity) > Date.now()) {
+              connection.user = user;
+            }else {
+              delete(user.longkeys[longkey]);
+            }
+          }
+        }
+      }
     }
   }
 }
