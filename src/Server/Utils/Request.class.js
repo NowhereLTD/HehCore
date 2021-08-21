@@ -81,11 +81,27 @@ export class Request {
       for(let username in users) {
         let user = users[username];
         for(let longkey in user.longkeys) {
-          if(longkey = key) {
+          if(longkey == key) {
             let longkeyData = user.longkeys[longkey];
             let checkDate = new Date();
             if(checkDate.setTime(longkeyData.validity) > Date.now()) {
               connection.user = user;
+
+              connection.user.hasPermission = function(checkPerm) {
+                let splitPerm = checkPerm.split(".");
+                if(this.permissions.includes("*") || this.permissions.includes(checkPerm)) {
+                  return true;
+                }
+                let perm = "";
+                for(let permission of splitPerm) {
+                  perm = perm + permission + ".";
+                  if(this.permissions.includes(perm + "*")) {
+                    return true;
+                  }
+                }
+                return false;
+              }
+
             }else {
               delete(user.longkeys[longkey]);
             }

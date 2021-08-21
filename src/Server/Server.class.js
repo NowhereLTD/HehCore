@@ -76,7 +76,13 @@ export class Server extends EventTarget {
       if(contentData) {
         request.setContentData(contentData);
       }
+
       request.loginAPIUser(this, connection);
+      if(connection.user == null) {
+        connection.user = {};
+        connection.user.hasPermission = function() {return false;}
+      }
+
       this.dispatchEvent(new CustomEvent("handle", {
         detail: {
           connection: connection,

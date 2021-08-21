@@ -19,14 +19,14 @@
     "admin": {
       "name": "admin",
       "longkeys": {
-        "<insert password here>": {
-          "key": "<insert password here>",
+        "mais0lathiequ0gohn0zaeliec5Buich": {
+          "key": "mais0lathiequ0gohn0zaeliec5Buich",
           "validity": 3093516536756669
         }
       },
-      "permissions": {
+      "permissions": [
         "*"
-      }
+      ]
     }
   }
 }
