@@ -43,12 +43,11 @@ export class Server extends EventTarget {
       let dataArray = [];
       let data = "";
       let requestSize = 0;
-      let nextContentLength = false;
       let contentLength = -1;
       let contentData = null;
       let lastLine = "";
 
-      while(dataArray[dataArray.length-1] != "\r" && requestSize != this.maxRequestSize && contentLength == -1 || contentLength > 0 && contentLength != -1) {
+      while(lastLine != "\r" && requestSize != this.maxRequestSize && contentLength == -1 || contentLength > 0 && contentLength != -1) {
         let requestBuffer = new Uint8Array(1);
         await connection.read(requestBuffer);
         let parsedBuffer = this.decoder.decode(requestBuffer);
@@ -74,7 +73,10 @@ export class Server extends EventTarget {
       }
 
       let request = new Request(data);
-      request.setContentData(contentData);
+      console.log(request);
+      if(contentData) {
+        request.setContentData(contentData);
+      }
       this.dispatchEvent(new CustomEvent("handle", {
         detail: {
           connection: connection,
