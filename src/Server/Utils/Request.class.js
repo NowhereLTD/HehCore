@@ -2,8 +2,6 @@
 export class Request {
   constructor(raw) {
     this.parseFromRaw(raw);
-    //this.parseContentRegex = /Content-Disposition\:\ form-data; name="(.*)"\r\n\r\n(.*)/gms;
-    //this.parseFileContentRegex = //gms;
     this.parseContentRegex = new RegExp("Content-Disposition\:\ form-data; name=\"([^\n]*)\"\r\n\r\n(.*)", "gms");
     this.parseFileContentRegex = new RegExp("Content-Disposition\:\ form-data; name=\"([^\n]*)\"; filename=\"([^\n]*)\"\r\nContent-Type\:\ ([^\n]*)(.*)", "gms");
   }
@@ -73,6 +71,43 @@ export class Request {
       }
     }else {
       console.log("Content type is actually not supported!");
+    }
+  }
+
+  loginAPIUser(server, connection) {
+    if(this["authorization"]) {
+      let key = this["authorization"].replace(" Bearer ", "");
+      let users = server.configData.user ?? {};
+      for(let username in users) {
+        let user = users[username];
+        for(let longkey in user.longkeys) {
+          if(longkey == key) {
+            let longkeyData = user.longkeys[longkey];
+            let checkDate = new Date();
+            if(checkDate.setTime(longkeyData.validity) > Date.now()) {
+              connection.user = user;
+
+              connection.user.hasPermission = function(checkPerm) {
+                let splitPerm = checkPerm.split(".");
+                if(this.permissions.includes("*") || this.permissions.includes(checkPerm)) {
+                  return true;
+                }
+                let perm = "";
+                for(let permission of splitPerm) {
+                  perm = perm + permission + ".";
+                  if(this.permissions.includes(perm + "*")) {
+                    return true;
+                  }
+                }
+                return false;
+              }
+
+            }else {
+              delete(user.longkeys[longkey]);
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -14,5 +14,19 @@
       "MPEG": ["mpg"],
       "ASX": ["asf"]
     }
+  },
+  "user": {
+    "admin": {
+      "name": "admin",
+      "longkeys": {
+        "<insert key here>": {
+          "key": "<insert key here>",
+          "validity": 3093516536756669
+        }
+      },
+      "permissions": [
+        "*"
+      ]
+    }
   }
 }
