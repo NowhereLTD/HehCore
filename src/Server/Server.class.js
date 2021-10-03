@@ -1,5 +1,3 @@
-import { Response } from "/src/Server/Utils/Response.class.js";
-import { Request } from "/src/Server/Utils/Request.class.js";
 import { ModuleParser } from "/src/ModuleParser/ModuleParser.class.js";
 
 /**
@@ -17,11 +15,7 @@ export class Server extends EventTarget {
     this.port = this.configData.settings.port ?? "80";
     this.protocol = this.configData.settings.protocol ?? "tcp";
     this.connections = [];
-    this.maxRequestSize = this.configData.settings.maxRequestSize ?? 1024;
     this.version = this.configData.settings.version ?? 1;
-
-    // Regex
-    this.getContentLengthRegex = new RegExp("Content-Length\: (.*)\\r$");
 
     this.moduleParser = new ModuleParser(this);
     return (async function () {
@@ -40,57 +34,24 @@ export class Server extends EventTarget {
       let connection = await this.listener.accept();
       this.connections[connection.rid] = connection;
 
-      let dataArray = [];
-      let data = "";
-      let requestSize = 0;
-      let contentLength = -1;
-      let contentData = null;
-      let lastLine = "";
-
-      while(lastLine != "\r" && requestSize != this.maxRequestSize && contentLength == -1 || contentLength > 0 && contentLength != -1) {
-        let requestBuffer = new Uint8Array(1);
-        await connection.read(requestBuffer);
-        let parsedBuffer = this.decoder.decode(requestBuffer);
-        lastLine = lastLine + parsedBuffer;
-
-        let contentLengthData = this.getContentLengthRegex.exec(lastLine);
-        if(contentLengthData) {
-          contentLength = contentLengthData[1];
-          dataArray.push(lastLine);
-          data = data + lastLine + "\n";
-          lastLine = "";
-        }
-        if(contentLength > 0) {
-          contentData = contentData + parsedBuffer;
-          contentLength--;
-        }else {
-          if(parsedBuffer == "\n") {
-            dataArray.push(lastLine);
-            data = data + lastLine;
-            lastLine = "";
+      let httpRequest = Deno.serveHttp(connection);
+      for await (let request of httpRequest) {
+        this.dispatchEvent(new CustomEvent("handle", {
+          detail: {
+            connection: connection,
+            request: request,
+            Server: this
           }
-        }
+        }));
       }
 
-      let request = new Request(data);
-      if(contentData) {
-        request.setContentData(contentData);
-      }
-
+      /*
       request.loginAPIUser(this, connection);
       if(connection.user == null) {
         connection.user = {};
         connection.user.hasPermission = function() {return false;}
       }
-
-      this.dispatchEvent(new CustomEvent("handle", {
-        detail: {
-          connection: connection,
-          request: request,
-          Response: Response,
-          Server: this
-        }
-      }));
+      */
     }
   }
 
@@ -119,5 +80,42 @@ export class Server extends EventTarget {
     path = path.substr(0, path.lastIndexOf("/"));
     path = path + "/";
     return path;
+  }
+
+  loginAPIUser(server, connection) {
+    if(this["authorization"]) {
+      let key = this["authorization"].replace(" Bearer ", "");
+      let users = server.configData.user ?? {};
+      for(let username in users) {
+        let user = users[username];
+        for(let longkey in user.longkeys) {
+          if(longkey == key) {
+            let longkeyData = user.longkeys[longkey];
+            let checkDate = new Date();
+            if(checkDate.setTime(longkeyData.validity) > Date.now()) {
+              connection.user = user;
+
+              connection.user.hasPermission = function(checkPerm) {
+                let splitPerm = checkPerm.split(".");
+                if(this.permissions.includes("*") || this.permissions.includes(checkPerm)) {
+                  return true;
+                }
+                let perm = "";
+                for(let permission of splitPerm) {
+                  perm = perm + permission + ".";
+                  if(this.permissions.includes(perm + "*")) {
+                    return true;
+                  }
+                }
+                return false;
+              }
+
+            }else {
+              delete(user.longkeys[longkey]);
+            }
+          }
+        }
+      }
+    }
   }
 }
