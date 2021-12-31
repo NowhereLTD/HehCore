@@ -10,12 +10,9 @@ export class RoutingHandler {
     this.server.RoutingHandler = this;
 
     this.server.addEventListener("handle", async function(e) {
-      let requestRoute = e.detail.request.request.url;
-      requestRoute = requestRoute.replace("http://", "");
-      requestRoute = requestRoute.replace(e.detail.request.request.headers.get("host") + "/", "");
-      let requestMethod = e.detail.request.request.method;
-      e.detail.request.route = requestRoute;
-      e.detail.request.getMime = function(filePath) {
+      let requestURL = new URL(e.detail.request.request.url);
+      e.detail.requestURL = requestURL;
+      e.detail.request.request.getMime = function(filePath) {
         let fileBase = filePath.split(".");
         let fileMime = fileBase[fileBase.length-1].toUpperCase();
         let contentType = MIMEType[fileMime];
@@ -24,16 +21,16 @@ export class RoutingHandler {
         }
         return contentType;
       }
-      if(this.routes[requestRoute + "/"] != null) {
-        if(this.routes[requestRoute + "/"].data.method == requestMethod || this.routes[requestRoute + "/"].data.method == "*") {
-          e.detail.settings = this.routes[requestRoute + "/"].settings;
-          await this.handleRouting(this.routes[requestRoute + "/"], e.detail);
+      if(this.routes[requestURL.pathname] != null) {
+        if(this.routes[requestURL.pathname].data.method == requestURL.method || this.routes[requestURL.pathname].data.method == "*") {
+          e.detail.settings = this.routes[requestURL.pathname].settings;
+          await this.handleRouting(this.routes[requestURL.pathname], e.detail);
           return true;
         }
       }
 
-      let splitRoute = requestRoute.split("/").reverse();
-      let requestRouteReplacement = requestRoute;
+      let splitRoute = requestURL.pathname.split("/").reverse();
+      let requestRouteReplacement = requestURL.pathname;
       splitRoute.push("");
 
       for(let routePart of splitRoute) {
@@ -43,7 +40,7 @@ export class RoutingHandler {
           route = route + "*";
         }
         if(this.routes[route] != null) {
-          if(this.routes[route].data.method == requestMethod || this.routes[route].data.method == "*") {
+          if(this.routes[route].data.method == requestURL.method || this.routes[route].data.method == "*") {
             e.detail.settings = this.routes[route].settings;
             await this.handleRouting(this.routes[route], e.detail);
             return true;

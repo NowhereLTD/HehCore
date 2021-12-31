@@ -30,21 +30,10 @@ export class Server extends EventTarget {
    */
   async listen() {
     this.listener = Deno.listen({ hostname: this.hostname, port: this.port, transport: this.protocol });
-    while(!this.closing) {
-      let connection = await this.listener.accept();
+    for await (let connection of this.listener) {
       this.connections[connection.rid] = connection;
-
-      let httpRequest = Deno.serveHttp(connection);
-      for await (let request of httpRequest) {
-        this.dispatchEvent(new CustomEvent("handle", {
-          detail: {
-            connection: connection,
-            request: request,
-            Server: this
-          }
-        }));
-      }
-
+      this.serveHttp(connection);
+    }
       /*
       request.loginAPIUser(this, connection);
       if(connection.user == null) {
@@ -52,7 +41,6 @@ export class Server extends EventTarget {
         connection.user.hasPermission = function() {return false;}
       }
       */
-    }
   }
 
   /**
@@ -74,6 +62,21 @@ export class Server extends EventTarget {
     }
     return true;
   }
+
+  async serveHttp(connection) {
+    let httpRequest = Deno.serveHttp(connection);
+    for await (let request of httpRequest) {
+      console.log("req");
+      this.dispatchEvent(new CustomEvent("handle", {
+        detail: {
+          connection: connection,
+          request: request,
+          Server: this
+        }
+      }));
+    }
+  }
+
 
   file2Path(path) {
     path = path.replace("file://", "");
